@@ -1,18 +1,18 @@
 version: "3"
 
 services:
-#  elasticsearch:
-#    image: elasticsearch:8.14.3
-#    environment:
-#      - discovery.type=single-node
-#      - xpack.security.enabled=false
-#    ports:
-#      - "9200:9200"
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: "0.5"
-#          memory: 512M
+  elasticsearch:
+    image: elasticsearch:8.14.3
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
 
 
   backend:
@@ -24,9 +24,9 @@ services:
     ports:
       - 8080:8080
 
-#  redis:
-#    image: redis:5.0.7-alpine
-#    env_file:
-#      - src/.env
-#    ports:
-#      - "6389:6379"
+  redis:
+    image: redis:5.0.7-alpine
+    env_file:
+      - src/.env
+    ports:
+      - "6389:6379"
