@@ -13,8 +13,16 @@ services:
         limits:
           cpus: "0.5"
           memory: 512M
-
-
+  db:
+    image: postgres:15
+    container_name: db
+    env_file:
+      - src/.env
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./etl/db_data:/var/lib/postgresql/data/
   backend:
     build: src/.
     env_file:
@@ -29,4 +37,4 @@ services:
     env_file:
       - src/.env
     ports:
-      - "6389:6379"
+      - "6379:6379"
