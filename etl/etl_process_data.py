@@ -37,9 +37,12 @@ class ETL:
                 logging.error("Error of creating index.")
 
     def run_etl(self):
+
+        # Check index, if it doesn't exist - create.
         self.create_index_if_doesnt_exist()
 
         extractor = Extract(self.table_name, self.database_params, self.size_of_batch)
+
         # Set initially value of size_of_current_batch as size_of_batch to begin cycle.
         size_of_current_batch = self.size_of_batch
 
@@ -47,7 +50,8 @@ class ETL:
         while size_of_current_batch == self.size_of_batch:
             state_modified = self.etl_state.get_last_state(self.table_name)
 
-            # Get data with modified time starting from last_modified, with size of batch equals size_of_batch.
+            # Get batch of data with modified time starting from last_modified, with size of batch equals size_of_batch.
+            # If size_of_current_batch not equals to size_of_batch - finish cycle.
             data_from_db, size_of_current_batch, last_modified = extractor.extract_data_from_db(state_modified)
 
             transformed_for_elasticsearch_data_from_db = transform_data_for_elasticsearch(index_name=self.index_name,
@@ -69,4 +73,3 @@ if __name__ == "__main__":
     etl_movies.run_etl()
     etl_genres.run_etl()
     etl_persons.run_etl()
-    # configs.etl_state.reset_state()
