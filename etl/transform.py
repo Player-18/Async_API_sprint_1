@@ -1,5 +1,7 @@
+from typing import Any
 
-def group_movies_data(data_from_db: dict):
+
+def group_movies_data(data_from_db: dict) -> [str, dict[str | Any, set[Any] | list[Any] | Any]]:
     """
     Function for grouping data from db.
     Raw data from db has a lot of doubles of entries(

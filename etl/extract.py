@@ -88,6 +88,10 @@ class Extract:
                 size_of_current_batch = len(executed_data)
 
             # Get modified date of the last entry in the batch.
+
+            if size_of_current_batch == 0:
+                logging.info('There is no new data to extract.')
+                return [], 0, state_modified
             last_modified = str(executed_data[-1]["modified"])
 
             return executed_data, size_of_current_batch, last_modified
