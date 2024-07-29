@@ -40,7 +40,7 @@ settings = {
 }
 
 
-filmwork_index = {
+movie_index = {
   "settings": settings
   ,
   "mappings": {
@@ -65,18 +65,6 @@ filmwork_index = {
         }
       },
       "description": {
-        "type": "text",
-        "analyzer": "ru_en"
-      },
-      "directors_names": {
-        "type": "text",
-        "analyzer": "ru_en"
-      },
-      "actors_names": {
-        "type": "text",
-        "analyzer": "ru_en"
-      },
-      "writers_names": {
         "type": "text",
         "analyzer": "ru_en"
       },

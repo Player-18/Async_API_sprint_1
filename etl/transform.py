@@ -16,7 +16,6 @@ def group_movies_data(data_from_db: dict) -> [str, dict[str | Any, set[Any] | li
             films[str(entry['fw_id'])] = {'id': entry.get('fw_id'), 'title': entry.get('title'), 'genres_set': set(),
                                           'description': entry.get('description'),
                                           'imdb_rating': entry.get('rating'),
-                                          'directors_names': [], 'actors_names': [], 'writers_names': [],
                                           'directors_id': set(), 'actors_id': set(), 'writers_id': set(),
                                           'directors': [], 'actors': [], 'writers': [], 'genres': []}
 
@@ -30,9 +29,6 @@ def group_movies_data(data_from_db: dict) -> [str, dict[str | Any, set[Any] | li
             person_dict = {'id': str(entry['person_id']), 'name': entry['person_full_name']}
             film[entry['person_role'] + "s"].append(person_dict)
 
-            # Add person to the list of directors or actors or writers names.
-            film[entry['person_role'] + "s_names"].append(entry['person_full_name'])
-
         # Add genre to set for checking existence and to the list for ES.
         if entry['genre_name'] not in film['genres_set']:
             film['genres_set'].add(entry['genre_name'])
@@ -41,7 +37,7 @@ def group_movies_data(data_from_db: dict) -> [str, dict[str | Any, set[Any] | li
     return films.values()
 
 
-def get_source_for_index(index_name: str, entry: dict):
+def get_source_for_index(index_name: str, entry: dict) -> dict:
     source = {}
 
     if index_name == "movies":
@@ -51,9 +47,6 @@ def get_source_for_index(index_name: str, entry: dict):
             "genres": entry["genres"],
             "title": entry["title"],
             "description": entry["description"],
-            "directors_names": entry["directors_names"],
-            "actors_names": entry["actors_names"],
-            "writers_names": entry["writers_names"],
             "directors": entry["directors"],
             "actors": entry["actors"],
             "writers": entry["writers"]}
@@ -72,7 +65,7 @@ def get_source_for_index(index_name: str, entry: dict):
 def transform_data_for_elasticsearch(index_name: str, data_from_db: dict):
     if index_name == "movies":
         data_from_db = group_movies_data(data_from_db)
-    data_for_bulk_load_to_elasticsearch = [
+    transformed_data = [
         {"_index": index_name,
          "_id": entry["id"],
          "_source": get_source_for_index(index_name, entry)
@@ -80,4 +73,4 @@ def transform_data_for_elasticsearch(index_name: str, data_from_db: dict):
         for entry in data_from_db
     ]
 
-    return data_for_bulk_load_to_elasticsearch
+    return transformed_data

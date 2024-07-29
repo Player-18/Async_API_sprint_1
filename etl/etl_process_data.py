@@ -6,7 +6,7 @@ from etl.extract import Extract
 from etl.load import load_data_to_elastic_search
 from etl.settings import BaseConfigs
 from etl.transform import transform_data_for_elasticsearch
-from indices import filmwork_index, genre_index, person_index
+from indices import movie_index, genre_index, person_index
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -21,7 +21,7 @@ class ETL:
         self.index_name = index_name
         self.index = index
 
-    @backoff(limit_of_retries=10)
+    # @backoff(limit_of_retries=10)
     def create_index_if_doesnt_exist(self) -> None:
         """
         Function heck index, if it doesn't exist - create.
@@ -66,7 +66,7 @@ class ETL:
 if __name__ == "__main__":
     configs = BaseConfigs()
 
-    etl_movies = ETL(configs, table_name="film_work", index_name="movies", index=filmwork_index)
+    etl_movies = ETL(configs, table_name="film_work", index_name="movies", index=movie_index)
     etl_genres = ETL(configs, table_name="genre", index_name="genres", index=genre_index)
     etl_persons = ETL(configs, table_name="person", index_name="persons", index=person_index)
 
