@@ -22,7 +22,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./etl/db_data:/var/lib/postgresql/data/
+      - ./etl/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - db_data:/var/lib/postgresql/data/
   backend:
     build: src/.
     env_file:
@@ -38,3 +39,5 @@ services:
       - src/.env
     ports:
       - "6379:6379"
+volumes:
+  db_data:
