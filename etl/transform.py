@@ -26,13 +26,16 @@ def group_movies_data(data_from_db: dict) -> [str, dict[str | Any, set[Any] | li
             film[entry['person_role'] + "s_id"].add(str(entry['person_id']))
 
             # Add person to the list of directors or actors or writers data.
-            person_dict = {'id': str(entry['person_id']), 'name': entry['person_full_name']}
-            film[entry['person_role'] + "s"].append(person_dict)
+            person_data = {'id': str(entry['person_id']), 'name': entry['person_full_name']}
+            film[entry['person_role'] + "s"].append(person_data)
 
         # Add genre to set for checking existence and to the list for ES.
         if entry['genre_name'] not in film['genres_set']:
+            # Add genre to set to exclude duplicates.
             film['genres_set'].add(entry['genre_name'])
-            film['genres'].append(entry['genre_name'])
+
+            genre_data = {'id': str(entry['genre_id']), 'name': entry['genre_name']}
+            film['genres'].append(genre_data)
 
     return films.values()
 

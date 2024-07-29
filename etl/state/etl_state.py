@@ -8,7 +8,7 @@ class StateETL:
     def __init__(self, state: State):
         self.state = state
 
-    # @backoff(limit_of_retries=10)
+    @backoff(limit_of_retries=10)
     def get_last_state(self, table_name: str):
         # Get last modified datetime.
         state_modified = self.state.get_state(f"{table_name}")

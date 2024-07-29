@@ -73,3 +73,4 @@ if __name__ == "__main__":
     etl_movies.run_etl()
     etl_genres.run_etl()
     etl_persons.run_etl()
+    # configs.etl_state.reset_state()

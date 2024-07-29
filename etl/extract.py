@@ -56,6 +56,7 @@ class Extract:
                         pfw.role as person_role, 
                         p.id as person_id, 
                         p.full_name as person_full_name,
+                        g.id as genre_id,
                         g.name as genre_name
                     FROM content.film_work fw
                     LEFT JOIN content.person_film_work pfw ON pfw.film_work_id = fw.id
