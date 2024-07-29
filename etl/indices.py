@@ -144,9 +144,6 @@ genre_index = {
       "description": {
         "type": "text",
         "analyzer": "ru_en"
-      },
-      "filmwork_ids": {
-        "type": "keyword"
       }
     }
   }
@@ -169,18 +166,6 @@ person_index = {
             "type":  "keyword"
           }
         }
-      },
-      "role": {
-        "type": "text",
-        "analyzer": "ru_en",
-        "fields": {
-          "raw": {
-            "type": "keyword"
-          }
-        }
-      },
-      "filmwork_ids": {
-        "type": "keyword"
       }
     }
   }

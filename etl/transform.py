@@ -1,17 +1,17 @@
 
-def group_data_from_db(data_from_db: list) -> dict:
+def group_movies_data(data_from_db: dict):
     """
     Function for grouping data from db.
     Raw data from db has a lot of doubles of entries(
     for each genre, for each person).
-    :param data_from_db: list
+    :param data_from_db:- list
     :return: dict of grouped data
     """
 
     films = {}
     for entry in data_from_db:
         if str(entry['fw_id']) not in films:
-            films[str(entry['fw_id'])] = {'title': entry.get('title'), 'genres_set': set(),
+            films[str(entry['fw_id'])] = {'id': entry.get('fw_id'), 'title': entry.get('title'), 'genres_set': set(),
                                           'description': entry.get('description'),
                                           'imdb_rating': entry.get('rating'),
                                           'directors_names': [], 'actors_names': [], 'writers_names': [],
@@ -36,28 +36,46 @@ def group_data_from_db(data_from_db: list) -> dict:
             film['genres_set'].add(entry['genre_name'])
             film['genres'].append(entry['genre_name'])
 
-    return films
+    return films.values()
 
 
-def transform_data_for_elasticsearch(data_from_db):
-    grouped_data_from_db = group_data_from_db(data_from_db)
+def get_source_for_index(index_name: str, entry: dict):
+    source = {}
 
-    data_for_bulk_load_elasticsearch = [
-        {"_index": "movies",
-         "_id": id,
-         "_source": {
-            "id": id,
-            "imdb_rating": filmwork["imdb_rating"],
-            "genres": filmwork["genres"],
-            "title": filmwork["title"],
-            "description": filmwork["description"],
-            "directors_names": filmwork["directors_names"],
-            "actors_names": filmwork["actors_names"],
-            "writers_names": filmwork["writers_names"],
-            "directors": filmwork["directors"],
-            "actors": filmwork["actors"],
-            "writers": filmwork["writers"]}
+    if index_name == "movies":
+        source = {
+            "id": entry["id"],
+            "imdb_rating": entry["imdb_rating"],
+            "genres": entry["genres"],
+            "title": entry["title"],
+            "description": entry["description"],
+            "directors_names": entry["directors_names"],
+            "actors_names": entry["actors_names"],
+            "writers_names": entry["writers_names"],
+            "directors": entry["directors"],
+            "actors": entry["actors"],
+            "writers": entry["writers"]}
+    elif index_name == "genres":
+        source = {
+            "id": entry["id"],
+            "name": entry["name"],
+            "description": entry["description"]}
+    elif index_name == "persons":
+        source = {
+            "id": entry["id"],
+            "full_name": entry["full_name"]}
+    return source
+
+
+def transform_data_for_elasticsearch(index_name: str, data_from_db: dict):
+    if index_name == "movies":
+        data_from_db = group_movies_data(data_from_db)
+    data_for_bulk_load_to_elasticsearch = [
+        {"_index": index_name,
+         "_id": entry["id"],
+         "_source": get_source_for_index(index_name, entry)
          }
-        for id, filmwork in grouped_data_from_db.items()
+        for entry in data_from_db
     ]
-    return data_for_bulk_load_elasticsearch
+
+    return data_for_bulk_load_to_elasticsearch

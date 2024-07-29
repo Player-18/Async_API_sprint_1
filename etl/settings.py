@@ -1,10 +1,9 @@
-import os
 from os.path import dirname, join
 from typing import ClassVar
 
 from pydantic import BaseSettings, Field
 from redis import StrictRedis
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
 
 from etl.state.etl_state import StateETL
 from etl.state.redis_state_storage import State, RedisStorage
@@ -36,6 +35,7 @@ class RedisSettings(BaseSettings):
 
 
 class BaseConfigs(BaseSettings):
+
     batch: int = Field(100, env='BATCH_SIZE')
     border_sleep_time: float = Field(10.0, env='BORDER_SLEEP_TIME')
     es_url: str = EsSettings().get_url()
