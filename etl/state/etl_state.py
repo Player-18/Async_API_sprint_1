@@ -1,7 +1,7 @@
 import logging
 
-from etl.backoff import backoff
-from etl.state.redis_state_storage import State
+from backoff import backoff
+from state.redis_state_storage import State
 
 
 class StateETL:
@@ -28,7 +28,7 @@ class StateETL:
     def set_last_state(self, table_name: str, last_modified: str, result: tuple):
         self.state.set_state(f"{table_name}", last_modified)
         if not result[0]:
-            logging.error(f"Documents were not uploaded to ES.")
+            logging.info(f"Documents of '{table_name}' were not uploaded to ES.")
         elif result[0] == 1:
             logging.info(f"{result[0]} document was added to ES. State was updated.")
         else:

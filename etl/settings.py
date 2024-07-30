@@ -5,8 +5,8 @@ from pydantic import BaseSettings, Field
 from redis import StrictRedis
 from dotenv import load_dotenv
 
-from etl.state.etl_state import StateETL
-from etl.state.redis_state_storage import State, RedisStorage
+from state.etl_state import StateETL
+from state.redis_state_storage import State, RedisStorage
 
 dotenv_path = join(dirname(dirname(__file__)), 'src/.env')
 load_dotenv(dotenv_path)

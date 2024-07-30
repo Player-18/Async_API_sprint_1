@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from etl.backoff import backoff
+from backoff import backoff
 
 
 @backoff(limit_of_retries=10)

@@ -4,7 +4,7 @@ import psycopg
 from psycopg.rows import dict_row
 from psycopg import ClientCursor
 
-from etl.backoff import backoff
+from backoff import backoff
 
 
 class Extract:

@@ -1,11 +1,11 @@
 import logging
 from elasticsearch import Elasticsearch
 
-from etl.backoff import backoff
-from etl.extract import Extract
-from etl.load import load_data_to_elastic_search
-from etl.settings import BaseConfigs
-from etl.transform import transform_data_for_elasticsearch
+from backoff import backoff
+from extract import Extract
+from load import load_data_to_elastic_search
+from settings import BaseConfigs
+from transform import transform_data_for_elasticsearch
 from indices import movie_index, genre_index, person_index
 
 logging.getLogger().setLevel(logging.INFO)
@@ -21,7 +21,7 @@ class ETL:
         self.index_name = index_name
         self.index = index
 
-    # @backoff(limit_of_retries=10)
+    @backoff(limit_of_retries=10)
     def create_index_if_doesnt_exist(self) -> None:
         """
         Function heck index, if it doesn't exist - create.
@@ -73,4 +73,3 @@ if __name__ == "__main__":
     etl_movies.run_etl()
     etl_genres.run_etl()
     etl_persons.run_etl()
-    # configs.etl_state.reset_state()
