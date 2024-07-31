@@ -3,6 +3,12 @@ version: "3"
 services:
   elasticsearch:
     image: elasticsearch:8.14.3
+    container_name: elastic
+    healthcheck:
+      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      interval: 20s
+      timeout: 10s
+      retries: 10
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -13,12 +19,31 @@ services:
         limits:
           cpus: "0.5"
           memory: 512M
-
-
+    volumes:
+      - elastic_volume:/usr/share/elasticsearch/data
+  db:
+    image: postgres:15
+    container_name: db
+    env_file:
+      - src/.env
+    healthcheck:
+      test: [ "CMD-SHELL", "sh", "-c", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./etl/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - db_data:/var/lib/postgresql/data/
   backend:
     build: src/.
     env_file:
       - src/.env
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - ./src:/srv/app
     ports:
@@ -26,7 +51,28 @@ services:
 
   redis:
     image: redis:5.0.7-alpine
+    container_name: redis
+    restart: always
+    volumes:
+      - redis_volume:/data
     env_file:
       - src/.env
     ports:
-      - "6389:6379"
+      - "6379:6379"
+  etl:
+    build:
+      context: ./etl
+    env_file:
+      - ./src/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    container_name: etl_process
+    restart: on-failure
+
+volumes:
+  db_data:
+  elastic_volume:
+  redis_volume:
