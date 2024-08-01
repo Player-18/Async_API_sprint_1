@@ -1,12 +1,11 @@
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse, orjson
+from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch
-from starlette.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.v1 import films
+from api.v1 import films, genres
 from core import config
 from db import redis, elastic
 
@@ -49,6 +48,7 @@ async def shutdown():
 
 
 app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
+app.include_router(genres.router, prefix='/api/v1/genres', tags=['genres'])
 
 
 if __name__ == "__main__":

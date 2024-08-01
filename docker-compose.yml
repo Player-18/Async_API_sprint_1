@@ -33,7 +33,7 @@ services:
       retries: 3
     restart: always
     ports:
-      - "5432:5432"
+      - "25432:5432"
     volumes:
       - ./etl/dump.sql:/docker-entrypoint-initdb.d/dump.sql
       - db_data:/var/lib/postgresql/data/
