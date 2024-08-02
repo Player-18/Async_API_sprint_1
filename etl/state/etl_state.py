@@ -1,7 +1,7 @@
 import logging
 
-from backoff import backoff
-from state.redis_state_storage import State
+from ..backoff import backoff
+from redis_state_storage import State
 
 
 class StateETL:

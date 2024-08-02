@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict
 
-from redis import StrictRedis, Redis
+from redis import Redis
 
 
 class BaseStorage(abc.ABC):
