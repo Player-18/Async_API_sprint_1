@@ -12,11 +12,15 @@ class Genre(Base):
     name: str
 
 
-class PersonName(Base):
-    full_name: str
+class GenreData(Genre):
+    description: str = None
 
 
-class Person(PersonName):
+class PersonData(Base):
+    name: str
+
+
+class Person(PersonData):
     role: List[str] = []
     film_ids: List[str] = []
 
@@ -24,9 +28,8 @@ class Person(PersonName):
 class Film(Base):
     title: str
     description: str = None
-    creation_date: date = None
     imdb_rating: Optional[float] = None
-    genres: List[Genre] = []
-    actors: List[PersonName] = []
-    directors: List[PersonName] = []
-    writers: List[PersonName] = []
+    genres: List[Genre] | None = []
+    actors: List[PersonData] | None = []
+    directors: List[PersonData] | None = []
+    writers: List[PersonData] | None = []

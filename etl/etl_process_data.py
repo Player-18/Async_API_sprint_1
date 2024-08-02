@@ -5,7 +5,7 @@ from backoff import backoff
 from extract import Extract
 from load import load_data_to_elastic_search
 from settings import BaseConfigs
-from transform import transform_data_for_elasticsearch
+from transform import transform_data_from_db_to_pydantic_models
 from indices import movie_index, genre_index, person_index
 
 logging.getLogger().setLevel(logging.INFO)
@@ -53,9 +53,8 @@ class ETL:
             # Get batch of data with modified time starting from last_modified, with size of batch equals size_of_batch.
             # If size_of_current_batch not equals to size_of_batch - finish cycle.
             data_from_db, size_of_current_batch, last_modified = extractor.extract_data_from_db(state_modified)
-
-            transformed_for_elasticsearch_data_from_db = transform_data_for_elasticsearch(index_name=self.index_name,
-                                                                                          data_from_db=data_from_db)
+            transformed_for_elasticsearch_data_from_db = transform_data_from_db_to_pydantic_models(
+                index_name=self.index_name, data_from_db=data_from_db)
             result_of_etl_loading = load_data_to_elastic_search(self.elasticsearch_host,
                                                                 transformed_for_elasticsearch_data_from_db)
 
