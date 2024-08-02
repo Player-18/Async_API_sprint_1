@@ -1,7 +1,7 @@
 from etl.models import Film, PersonData, GenreData
 
 
-def transform_data_from_db_to_pydantic_models(index_name, data_from_db):
+def transform_data_from_db_for_loading_to_es(index_name, data_from_db):
     transformed_data = []
     if index_name == "movies":
         transformed_data = [{"_index": index_name,

@@ -14,7 +14,7 @@ class Extract:
         self.database_params = database_params
         self.size_of_batch = size_of_batch
 
-    # @backoff(limit_of_retries=10)
+    @backoff(limit_of_retries=10)
     def extract_data_from_db(self, last_modified: str) -> (list, int, str):
         """
         Function extract data from postgres DB.

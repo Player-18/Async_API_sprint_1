@@ -27,12 +27,6 @@ class StateETL:
     @backoff(limit_of_retries=10)
     def set_last_state(self, table_name: str, last_modified: str, result: tuple):
         self.state.set_state(f"{table_name}", last_modified)
-        if not result[0]:
-            logging.info(f"Documents of '{table_name}' were not uploaded to ES.")
-        elif result[0] == 1:
-            logging.info(f"{result[0]} document was added to ES. State was updated.")
-        else:
-            logging.info(f"{result[0]} documents were added to ES. State was updated.")
 
     @backoff(limit_of_retries=10)
     def reset_state(self):

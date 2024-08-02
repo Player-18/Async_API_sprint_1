@@ -4,7 +4,7 @@ from elasticsearch.helpers import bulk
 from backoff import backoff
 
 
-# @backoff(limit_of_retries=10)
+@backoff(limit_of_retries=10)
 def load_data_to_elastic_search(elasticsearch_host: str, data: list):
     """
     Function for loading data to Elasticsearch.

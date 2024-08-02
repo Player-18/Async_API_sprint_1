@@ -2,10 +2,11 @@ import logging
 from elasticsearch import Elasticsearch
 
 from backoff import backoff
+from etl.log import log_etl_result
 from extract import Extract
 from load import load_data_to_elastic_search
 from settings import BaseConfigs
-from transform import transform_data_from_db_to_pydantic_models
+from transform import transform_data_from_db_for_loading_to_es
 from indices import movie_index, genre_index, person_index
 
 logging.getLogger().setLevel(logging.INFO)
@@ -53,13 +54,15 @@ class ETL:
             # Get batch of data with modified time starting from last_modified, with size of batch equals size_of_batch.
             # If size_of_current_batch not equals to size_of_batch - finish cycle.
             data_from_db, size_of_current_batch, last_modified = extractor.extract_data_from_db(state_modified)
-            transformed_for_elasticsearch_data_from_db = transform_data_from_db_to_pydantic_models(
+            transformed_for_elasticsearch_data_from_db = transform_data_from_db_for_loading_to_es(
                 index_name=self.index_name, data_from_db=data_from_db)
             result_of_etl_loading = load_data_to_elastic_search(self.elasticsearch_host,
                                                                 transformed_for_elasticsearch_data_from_db)
 
             # Set new state.
             self.etl_state.set_last_state(self.table_name, last_modified, result_of_etl_loading)
+
+            log_etl_result(result_of_etl_loading, self.table_name)
 
 
 if __name__ == "__main__":
