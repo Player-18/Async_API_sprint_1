@@ -25,9 +25,9 @@ services:
     image: postgres:15
     container_name: db
     env_file:
-      - src/.env
+      - ./src/.env
     healthcheck:
-      test: [ "CMD-SHELL", "sh", "-c", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB'"]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -40,7 +40,7 @@ services:
   backend:
     build: src/.
     env_file:
-      - src/.env
+      - ./src/.env
     depends_on:
       db:
         condition: service_healthy
@@ -56,7 +56,7 @@ services:
     volumes:
       - redis_volume:/data
     env_file:
-      - src/.env
+      - ./src/.env
     ports:
       - "6379:6379"
   etl:
