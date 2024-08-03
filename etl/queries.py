@@ -1,4 +1,10 @@
 def generate_filmwork_query(last_modified, size_of_batch):
+    """
+    Function generate filmwork query.
+    :param last_modified: Last modified datetime for query.
+    :param size_of_batch: Size of batch.
+    :return: Query
+    """
     query = f"""
                 SELECT
                     fw.id, 

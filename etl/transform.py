@@ -2,6 +2,12 @@ from etl.models import Film, PersonData, GenreData
 
 
 def transform_data_from_db_for_loading_to_es(index_name, data_from_db):
+    """
+    Function for transforming data from DB to format for ElasticSearch.
+    :param index_name: The name of index.
+    :param data_from_db: Data from DB.
+    :return: Transformed data for loading to the ElasticSearch.
+    """
     transformed_data = []
     if index_name == "movies":
         transformed_data = [{"_index": index_name,

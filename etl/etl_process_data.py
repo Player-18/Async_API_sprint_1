@@ -2,7 +2,7 @@ import logging
 from elasticsearch import Elasticsearch
 
 from backoff import backoff
-from etl.log import log_etl_result
+from etl.log import log_es_result
 from extract import Extract
 from load import load_data_to_elastic_search
 from settings import BaseConfigs
@@ -25,7 +25,7 @@ class ETL:
     @backoff(limit_of_retries=10)
     def create_index_if_doesnt_exist(self) -> None:
         """
-        Function heck index, if it doesn't exist - create.
+        Function check index, if it doesn't exist - create.
         :return: None
         """
         client = Elasticsearch(hosts=self.elasticsearch_host)
@@ -38,7 +38,9 @@ class ETL:
                 logging.error("Error of creating index.")
 
     def run_etl(self):
-
+        """
+        Function run ETL process: check indexes, get state, get data from db, transform data, load data.
+        """
         # Check index, if it doesn't exist - create.
         self.create_index_if_doesnt_exist()
 
@@ -54,15 +56,18 @@ class ETL:
             # Get batch of data with modified time starting from last_modified, with size of batch equals size_of_batch.
             # If size_of_current_batch not equals to size_of_batch - finish cycle.
             data_from_db, size_of_current_batch, last_modified = extractor.extract_data_from_db(state_modified)
+
             transformed_for_elasticsearch_data_from_db = transform_data_from_db_for_loading_to_es(
                 index_name=self.index_name, data_from_db=data_from_db)
+
             result_of_etl_loading = load_data_to_elastic_search(self.elasticsearch_host,
                                                                 transformed_for_elasticsearch_data_from_db)
 
             # Set new state.
             self.etl_state.set_last_state(self.table_name, last_modified, result_of_etl_loading)
 
-            log_etl_result(result_of_etl_loading, self.table_name)
+            # Log result of loading.
+            log_es_result(result_of_etl_loading, self.table_name)
 
 
 if __name__ == "__main__":

@@ -18,8 +18,8 @@ class Extract:
     def extract_data_from_db(self, last_modified: str) -> (list, int, str):
         """
         Function extract data from postgres DB.
-        :param last_modified: Last modified data.
-        :return: List of data, size of current batch, last modified data of filmwork.
+        :param last_modified: Last modified of data.
+        :return: List of data, size of current batch, modified datetime of last entry.
         """
         with psycopg.connect(**self.database_params, row_factory=dict_row,
                              cursor_factory=ClientCursor) as conn, conn.cursor() as cursor:
