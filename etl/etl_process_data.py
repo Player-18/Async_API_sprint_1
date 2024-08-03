@@ -25,7 +25,7 @@ class ETL:
     @backoff(limit_of_retries=10)
     def create_index_if_doesnt_exist(self) -> None:
         """
-        Function check index, if it doesn't exist - create.
+        Method checks index, if it doesn't exist - create.
         :return: None
         """
         client = Elasticsearch(hosts=self.elasticsearch_host)
@@ -39,7 +39,7 @@ class ETL:
 
     def run_etl(self):
         """
-        Function run ETL process: check indexes, get state, get data from db, transform data, load data.
+        Method runs ETL process: check indexes, get state, get data from db, transform data, load data.
         """
         # Check index, if it doesn't exist - create.
         self.create_index_if_doesnt_exist()

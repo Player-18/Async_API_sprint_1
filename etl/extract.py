@@ -17,7 +17,7 @@ class Extract:
     @backoff(limit_of_retries=10)
     def extract_data_from_db(self, last_modified: str) -> (list, int, str):
         """
-        Function extract data from postgres DB.
+        Method extracts data from postgres DB.
         :param last_modified: Last modified of data.
         :return: List of data, size of current batch, modified datetime of last entry.
         """
