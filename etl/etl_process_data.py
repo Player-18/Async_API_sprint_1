@@ -2,7 +2,7 @@ import logging
 from elasticsearch import Elasticsearch
 
 from backoff import backoff
-from etl.log import log_es_result
+from log import log_es_result
 from extract import Extract
 from load import load_data_to_elastic_search
 from settings import BaseConfigs
@@ -64,7 +64,7 @@ class ETL:
                                                                 transformed_for_elasticsearch_data_from_db)
 
             # Set new state.
-            self.etl_state.set_last_state(self.table_name, last_modified, result_of_etl_loading)
+            self.etl_state.set_last_state(self.table_name, last_modified)
 
             # Log result of loading.
             log_es_result(result_of_etl_loading, self.table_name)

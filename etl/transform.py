@@ -1,4 +1,4 @@
-from etl.models import Film, PersonData, GenreData
+from models import Film, PersonData, GenreData
 
 
 def transform_data_from_db_for_loading_to_es(index_name, data_from_db):

@@ -5,7 +5,7 @@ from psycopg.rows import dict_row
 from psycopg import ClientCursor
 
 from backoff import backoff
-from etl.queries import generate_filmwork_query, generate_person_query, generate_genre_query
+from queries import generate_filmwork_query, generate_person_query, generate_genre_query
 
 
 class Extract:
