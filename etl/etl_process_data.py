@@ -1,4 +1,6 @@
 import logging
+import time
+
 from elasticsearch import Elasticsearch
 
 from backoff import backoff
@@ -77,6 +79,8 @@ if __name__ == "__main__":
     etl_genres = ETL(configs, table_name="genre", index_name="genres", index=genre_index)
     etl_persons = ETL(configs, table_name="person", index_name="persons", index=person_index)
 
-    etl_movies.run_etl()
-    etl_genres.run_etl()
-    etl_persons.run_etl()
+    while True:
+        etl_movies.run_etl()
+        etl_genres.run_etl()
+        etl_persons.run_etl()
+        time.sleep(configs.run_etl_every_seconds)
