@@ -1,9 +1,11 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
+from fastapi_cache.backends.redis import RedisBackend
 from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_cache import FastAPICache
 
 from api.v1 import films, genres
 from core import config
@@ -33,10 +35,8 @@ app.add_middleware(
 
 @app.on_event('startup')
 async def startup():
-    # Подключаемся к базам при старте сервера
-    # Подключиться можем при работающем event-loop
-    # Поэтому логика подключения происходит в асинхронной функции
     redis.redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT)
+    FastAPICache.init(RedisBackend(redis.redis), prefix="fastapi-cache")
     elastic.es = AsyncElasticsearch(hosts=[f'{config.ELASTIC_SCHEMA}{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'])
 
 
