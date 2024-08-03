@@ -1,5 +1,10 @@
 import time
 from functools import wraps
+
+from psycopg import Error as db_error
+from elasticsearch.exceptions import TransportError as es_error
+from redis import RedisError as redis_error
+
 import random
 import logging
 
@@ -35,7 +40,14 @@ def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10.0, limit_of_ret
                     # Add jitter
                     delay = computed_delay/2 + random.uniform(0, computed_delay/2)
 
-                    logging.error(msg='Connection error')
+                    if isinstance(e, db_error):
+                        logging.error(msg=f"Database error. {e}")
+                    elif isinstance(e, redis_error):
+                        logging.error(msg=f"Redis error. {e}")
+                    elif isinstance(e, es_error):
+                        logging.error(msg=f"ElasticSearch error. {e}")
+                    else:
+                        logging.error(msg=f"Unknown error. {e}")
 
                     if retries > limit_of_retries:
                         logging.critical(msg=f"The number of reconnections exceeded. {e}")
