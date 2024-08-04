@@ -52,12 +52,32 @@ async def list_films_imbd_sorted(
         genre: Optional[str] = Query(None, description="Filter by genre ID"),
         film_service: FilmService = Depends(get_film_service)
 ) -> List[FilmIMBDSortedInput]:
-    films = await film_service.get_films_list_sorted(
+    films = await film_service.get_films_list_filtered_searched_sorted(
         query=query,
         sort=sort,
         page_size=page_size,
         page_number=page_number,
         genre_id=genre)
+
+    if not films:
+        raise HTTPException(status_code=404, detail="No films found")
+
+    return [FilmIMBDSortedOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
+
+
+@router.get('/{film_id}/similar', response_model=List[FilmIMBDSortedOutput])
+@cache(expire=60)
+async def list_films_imbd_sorted(
+        film_id: str,
+        page_size: int = Query(50, le=100, description="Number of films per page"),
+        page_number: int = Query(1, ge=1, description="Page number"),
+        film_service: FilmService = Depends(get_film_service)
+) -> List[FilmIMBDSortedInput]:
+    films = await film_service.get_similar_films(
+        film_id=film_id,
+        page_size=page_size,
+        page_number=page_number
+    )
 
     if not films:
         raise HTTPException(status_code=404, detail="No films found")

@@ -23,7 +23,7 @@ class FilmService:
         except NotFoundError:
             return None
 
-    async def get_films_list_sorted(
+    async def get_films_list_filtered_searched_sorted(
             self,
             query: Optional[str] = None,
             genre_id: Optional[str] = None,
@@ -74,12 +74,63 @@ class FilmService:
             sort_order = sort_dict.get(sort[0], "desc") if sort.startswith(('+', '-')) else "desc"
             query_body["sort"] = [{sort_field: {"order": sort_order}}]
 
-        # Execute the search
         response = await self.elastic.search(body=query_body, index=self.index)
 
         hits = response.get("hits", {}).get("hits", [])
         if not hits:
             return None
+
+        films = [FilmIMBDSortedInput(**item["_source"]) for item in hits]
+        return films
+
+    async def get_similar_films(
+            self,
+            film_id: str,
+            page_number: int = 1,
+            page_size: int = 50
+    ) -> List[FilmIMBDSortedInput]:
+        """Retrieve similar films based on genre."""
+
+        # Retrieve the film details from Elasticsearch
+        film = await self.get_film_from_elastic(film_id)
+        if not film:
+            return []
+
+        # Extract genres from the retrieved film
+        genres = [genre["id"] for genre in film.get("genres", [])]
+
+        # Build the query to find similar films based on the extracted genres
+        query_body = {
+            "size": page_size,
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "nested": {
+                                "path": "genres",
+                                "query": {
+                                    "bool": {
+                                        "must": [
+                                            {"terms": {"genres.id": genres}}  # Match any of the genres
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {"term": {"id": film_id}}  # Exclude the original film
+                    ]
+                }
+            },
+            "from": (page_number - 1) * page_size  # Pagination
+        }
+
+        response = await self.elastic.search(body=query_body, index=self.index)
+
+        hits = response.get("hits", {}).get("hits", [])
+        if not hits:
+            return []
 
         films = [FilmIMBDSortedInput(**item["_source"]) for item in hits]
         return films
