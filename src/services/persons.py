@@ -3,7 +3,7 @@ from typing import List
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from db.elastic import get_elastic
-from models.film import ListFilm
+from models.film import FilmListOutput
 from models.person import PersonUUID, PersonWithFilms, FilmWithPersonRoles
 
 
@@ -108,7 +108,7 @@ class PersonService:
                        "hits")]
         return persons
 
-    async def person_films(self, person_id) -> list[ListFilm] | None:
+    async def person_films(self, person_id) -> list[FilmListOutput] | None:
         """
         Get films with person
         """
@@ -116,7 +116,7 @@ class PersonService:
 
         hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
         print(hits_films)
-        films = [ListFilm(id=film["_source"]['id'], title=film["_source"]['title'], imdb_rating=film["_source"][
+        films = [FilmListOutput(uuid=film["_source"]['id'], title=film["_source"]['title'], imdb_rating=film["_source"][
             'imdb_rating']) for film in hits_films]
         return films
 
