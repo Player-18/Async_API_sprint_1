@@ -17,9 +17,9 @@ router = APIRouter()
 )
 @cache(expire=60)
 async def person(
-    person_service: PersonService = Depends(person_service),
-    page: int = 1,
-    page_size: int = 10
+        person_service: PersonService = Depends(person_service),
+        page: int = 1,
+        page_size: int = 10
 ) -> list[PersonUUID]:
     person_list = await person_service.person_list(
         page, page_size
@@ -34,8 +34,8 @@ async def person(
 )
 @cache(expire=60)
 async def persons(
-    person_id: str,
-    person_service: PersonService = Depends(person_service),
+        person_id: str,
+        person_service: PersonService = Depends(person_service),
 ) -> PersonUUID:
     person = await person_service.person_detail(
         person_id
@@ -49,10 +49,10 @@ async def persons(
     summary="Films with person.",
 )
 @cache(expire=60)
-async def film_with_person(
-    person_id: str,
-    person_service: PersonService = Depends(person_service),
-) -> PersonUUID:
+async def films_with_person(
+        person_id: str,
+        person_service: PersonService = Depends(person_service),
+) -> list[ListFilm] | None:
     films = await person_service.person_films(
         person_id
     )

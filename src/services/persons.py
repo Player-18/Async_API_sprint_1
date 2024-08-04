@@ -1,3 +1,5 @@
+from typing import List
+
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from db.elastic import get_elastic
@@ -13,8 +15,10 @@ class PersonService:
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
-    async def _get_films_with_person(self, person_id: str):
-        # Query to ES for getting films with person.
+    async def _get_films_with_person(self, person_id: str) -> List:
+        """
+        Query to ES for getting films with person.
+        """
         query_films_with_person = {
             "query": {
                 "bool": {
@@ -105,7 +109,9 @@ class PersonService:
         return persons
 
     async def person_films(self, person_id) -> list[ListFilm] | None:
-
+        """
+        Get films with person
+        """
         search_films_with_person = await self._get_films_with_person(person_id)
 
         hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
