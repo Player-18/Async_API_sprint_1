@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
@@ -23,19 +23,21 @@ class FilmService:
         except NotFoundError:
             return None
 
-    async def get_films_list_sorted(self,
-                                    sort: str,
-                                    page_number: int,
-                                    page_size: int,
-                                    genre_id: Optional[str] = None
-                                    ) -> list[FilmIMBDSortedInput] | None:
-        """Получение списка фильмов отсортированных по рейтингу IMBD."""
+    async def get_films_list_sorted(
+            self,
+            query: Optional[str] = None,
+            genre_id: Optional[str] = None,
+            sort: Optional[str] = None,
+            page_number: int = 1,
+            page_size: int = 50
+    ) -> List[FilmIMBDSortedInput] | None:
+        """Retrieve a list of films with optional sorting, genre filtering, and full-text search."""
 
         sort_dict = {"+": "asc", "-": "desc"}
 
+        # Construct filter conditions
         filter_conditions = []
         if genre_id:
-            # Handle nested field filtering for genre_id
             filter_conditions.append({
                 "nested": {
                     "path": "genres",
@@ -49,26 +51,37 @@ class FilmService:
                 }
             })
 
+        # Construct search conditions
+        search_conditions = []
+        if query:
+            search_conditions.append({"match": {"title": query}})
+
         # Build the query
-        query = {
+        query_body = {
             "size": page_size,
             "query": {
                 "bool": {
-                    "must": [{"match_all": {}}],
+                    "must": search_conditions,
                     "filter": filter_conditions
                 }
             },
-            "sort": [{sort[1:]: {"order": sort_dict.get(sort[0])}}],
             "from": (page_number - 1) * page_size,
         }
 
-        response = await self.elastic.search(body=query, index=self.index)
+        # Add sorting if provided
+        if sort != '-':
+            sort_field = sort[1:] if sort.startswith(('+', '-')) else "imdb_rating"
+            sort_order = sort_dict.get(sort[0], "desc") if sort.startswith(('+', '-')) else "desc"
+            query_body["sort"] = [{sort_field: {"order": sort_order}}]
 
-        hits = response.get("hits")
+        # Execute the search
+        response = await self.elastic.search(body=query_body, index=self.index)
+
+        hits = response.get("hits", {}).get("hits", [])
         if not hits:
             return None
 
-        films = [FilmIMBDSortedInput(**item["_source"]) for item in hits.get("hits")]
+        films = [FilmIMBDSortedInput(**item["_source"]) for item in hits]
         return films
 
 
