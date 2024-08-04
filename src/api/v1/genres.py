@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
 
 from models.genre import Genre
-from service.genres import GenreService, genre_service
+from services.genres import GenreService, genre_service
 
 router = APIRouter()
 
