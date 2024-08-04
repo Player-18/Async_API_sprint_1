@@ -4,7 +4,7 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
 from db.elastic import get_elastic
-from models.film import FilmDetail, FilmIMBDSortedInput
+from models.film import FilmDetail, FilmListInput
 
 
 class FilmService:
@@ -15,13 +15,13 @@ class FilmService:
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
-    async def _search_films(self, query_body: dict) -> List[FilmIMBDSortedInput]:
+    async def _search_films(self, query_body: dict) -> List[FilmListInput]:
         """Perform the search and return a list of FilmIMBDSortedInput."""
         response = await self.elastic.search(body=query_body, index=self.index)
         hits = response.get("hits", {}).get("hits", [])
         if not hits:
             return []
-        return [FilmIMBDSortedInput(**item["_source"]) for item in hits]
+        return [FilmListInput(**item["_source"]) for item in hits]
 
     async def get_film_from_elastic(self, film_id: str) -> Optional[FilmDetail]:
         """Retrieve a single film from Elasticsearch."""
@@ -38,7 +38,7 @@ class FilmService:
             sort: Optional[str] = None,
             page_number: int = 1,
             page_size: int = 50
-    ) -> List[FilmIMBDSortedInput] | None:
+    ) -> List[FilmListInput] | None:
         """Retrieve a list of films with optional sorting, genre filtering, and full-text search."""
 
         sort_dict = {"+": "asc", "-": "desc"}
@@ -89,7 +89,7 @@ class FilmService:
             film_id: str,
             page_number: int = 1,
             page_size: int = 50
-    ) -> List[FilmIMBDSortedInput]:
+    ) -> List[FilmListInput]:
         """Retrieve similar films based on genre."""
 
         # Retrieve the film details from Elasticsearch

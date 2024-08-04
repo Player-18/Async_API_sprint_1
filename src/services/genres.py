@@ -4,7 +4,7 @@ from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from db.elastic import get_elastic
-from models.film import FilmIMBDSortedInput
+from models.film import FilmListInput
 from models.genre import Genre
 
 
@@ -54,7 +54,7 @@ class GenreService:
             genre_id: str,
             page_number: int = 1,
             page_size: int = 50
-    ) -> Optional[List[FilmIMBDSortedInput]]:
+    ) -> Optional[List[FilmListInput]]:
         """Retrieve films sorted by IMDb rating based on genre ID."""
 
         # Build the query to filter by nested genre and sort by IMDb rating
@@ -90,7 +90,7 @@ class GenreService:
         if not hits:
             return None
 
-        films = [FilmIMBDSortedInput(**item["_source"]) for item in hits]
+        films = [FilmListInput(**item["_source"]) for item in hits]
         return films
 
 

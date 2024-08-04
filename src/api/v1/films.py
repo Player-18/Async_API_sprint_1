@@ -3,7 +3,7 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi_cache.decorator import cache
 
-from models.film import FilmDetail, FilmIMBDSortedInput, FilmIMBDSortedOutput
+from models.film import FilmDetail, FilmListInput, FilmListOutput
 from models.genre import GenreUUID
 from models.person import PersonUUID
 from services.film import FilmService, get_film_service
@@ -42,7 +42,7 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
     )
 
 
-@router.get('/', response_model=List[FilmIMBDSortedOutput])
+@router.get('/', response_model=List[FilmListOutput])
 @cache(expire=60)
 async def list_films_imbd_sorted(
         query: Optional[str] = Query(None, description="Search query for film titles"),
@@ -51,7 +51,7 @@ async def list_films_imbd_sorted(
         page_number: int = Query(1, ge=1, description="Page number"),
         genre: Optional[str] = Query(None, description="Filter by genre ID"),
         film_service: FilmService = Depends(get_film_service)
-) -> List[FilmIMBDSortedOutput]:
+) -> List[FilmListOutput]:
     films = await film_service.get_films_list_filtered_searched_sorted(
         query=query,
         sort=sort,
@@ -62,17 +62,17 @@ async def list_films_imbd_sorted(
     if not films:
         raise HTTPException(status_code=404, detail="No films found")
 
-    return [FilmIMBDSortedOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
+    return [FilmListOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
 
 
-@router.get('/{film_id}/similar', response_model=List[FilmIMBDSortedOutput])
+@router.get('/{film_id}/similar', response_model=List[FilmListOutput])
 @cache(expire=60)
 async def list_films_imbd_sorted(
         film_id: str,
         page_size: int = Query(50, le=100, description="Number of films per page"),
         page_number: int = Query(1, ge=1, description="Page number"),
         film_service: FilmService = Depends(get_film_service)
-) -> List[FilmIMBDSortedOutput]:
+) -> List[FilmListOutput]:
     films = await film_service.get_similar_films(
         film_id=film_id,
         page_size=page_size,
@@ -82,4 +82,4 @@ async def list_films_imbd_sorted(
     if not films:
         raise HTTPException(status_code=404, detail="No films found")
 
-    return [FilmIMBDSortedOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
+    return [FilmListOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
