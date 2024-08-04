@@ -6,3 +6,10 @@ class Person(BaseModel):
 
     id: str
     full_name: str
+
+
+class PersonUUID(BaseModel):
+    """Модель персоны c UUID."""
+
+    uuid: str
+    full_name: str

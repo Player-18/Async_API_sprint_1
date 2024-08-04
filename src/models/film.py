@@ -2,21 +2,21 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
+from models.genre import GenreUUID
+from models.person import PersonUUID
 
-class Film(BaseModel):
+
+class FilmDetail(BaseModel):
     """Модель фильма."""
 
-    id: str
-    imdb_rating: Optional[float]
-    title: Optional[str]
-    genres: Optional[List[str]]
-    description: Optional[str]
-    directors: Optional[List[dict]]
-    actors: Optional[List[dict]]
-    writers: Optional[List[dict]]
-    directors_names: Optional[List[str]]
-    actors_names: Optional[List[str]]
-    writers_names: Optional[List[str]]
+    uuid: str
+    title: str
+    imdb_rating: float
+    description: str
+    genres: List[GenreUUID]
+    actors: List[PersonUUID]
+    writers: List[PersonUUID]
+    directors: List[PersonUUID]
 
 
 class ListFilm(BaseModel):
