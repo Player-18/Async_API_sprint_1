@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Genre(BaseModel):
     """Модель жанра."""
 
-    id: str
+    uuid: str = Field(..., alias="id")
     name: str
 
 

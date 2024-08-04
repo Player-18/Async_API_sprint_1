@@ -13,6 +13,7 @@ router = APIRouter()
 @router.get(
     "/",
     response_model=list[Genre],
+    response_model_by_alias=False,
     summary="Список жанров",
 )
 @cache(expire=60)
@@ -30,6 +31,7 @@ async def genres(
 @router.get(
     "/{genre_id}",
     response_model=Genre,
+    response_model_by_alias=False,
     summary="Деталка жанра",
 )
 @cache(expire=60)
