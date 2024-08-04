@@ -13,6 +13,37 @@ class PersonService:
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
+    async def _get_films_with_person(self, person_id: str):
+        # Query to ES for getting films with person.
+        query_films_with_person = {
+            "query": {
+                "bool": {
+                    "should": [
+                        {
+                            "nested": {
+                                "path": "directors",
+                                "query": {"bool": {"should": {"term": {"directors.id": f"{person_id}"}}}},
+                            }
+                        },
+                        {
+                            "nested": {
+                                "path": "writers",
+                                "query": {"bool": {"should": {"term": {"writers.id": f"{person_id}"}}}},
+                            }
+                        },
+                        {
+                            "nested": {
+                                "path": "actors",
+                                "query": {"bool": {"should": {"term": {"actors.id": f"{person_id}"}}}},
+                            }
+                        },
+                    ]
+                }
+            }}
+
+        search_films_with_person = await self.elastic.search(body=query_films_with_person, index='movies')
+        return search_films_with_person
+
     async def person_detail(self, person_id: str) -> PersonWithFilms | None:
         """Detail of person with films and roles in those films."""
 
@@ -23,34 +54,8 @@ class PersonService:
         if not response["_source"]:
             return None
 
-        # Query to ES for getting films with person.
-        query_films_with_person = {
-                "query": {
-                    "bool": {
-                        "should": [
-                            {
-                                "nested": {
-                                    "path": "directors",
-                                    "query": {"bool": {"should": {"term": {"directors.id": f"{person_id}"}}}},
-                                }
-                            },
-                            {
-                                "nested": {
-                                    "path": "writers",
-                                    "query": {"bool": {"should": {"term": {"writers.id": f"{person_id}"}}}},
-                                }
-                            },
-                            {
-                                "nested": {
-                                    "path": "actors",
-                                    "query": {"bool": {"should": {"term": {"actors.id": f"{person_id}"}}}},
-                                }
-                            },
-                        ]
-                    }
-                }}
+        search_films_with_person = await self._get_films_with_person(person_id)
 
-        search_films_with_person = await self.elastic.search(body=query_films_with_person, index='movies')
         hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
 
         films_with_person_roles = []
@@ -72,7 +77,7 @@ class PersonService:
                     if writer["id"] == person_id:
                         person_roles.append("writer")
 
-            films_with_person_roles.append(FilmWithPersonRoles(uuid=film_source["id"], roles = person_roles))
+            films_with_person_roles.append(FilmWithPersonRoles(uuid=film_source["id"], roles=person_roles))
 
         person = PersonWithFilms(uuid=response["_source"].get('id'), full_name=response["_source"].get('name'),
                                  films=films_with_person_roles)
@@ -98,6 +103,16 @@ class PersonService:
                    hits.get(
                        "hits")]
         return persons
+
+    async def person_films(self, person_id) -> list[ListFilm] | None:
+
+        search_films_with_person = await self._get_films_with_person(person_id)
+
+        hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
+        print(hits_films)
+        films = [ListFilm(id=film["_source"]['id'], title=film["_source"]['title'], imdb_rating=film["_source"][
+            'imdb_rating']) for film in hits_films]
+        return films
 
 
 def person_service(

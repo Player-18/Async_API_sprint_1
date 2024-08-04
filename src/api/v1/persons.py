@@ -1,6 +1,9 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
 
+from models.film import ListFilm
 from models.person import PersonUUID, PersonWithFilms
 from services.persons import PersonService, person_service
 
@@ -38,3 +41,19 @@ async def persons(
         person_id
     )
     return person
+
+
+@router.get(
+    "/{person_id}/film",
+    response_model=List[ListFilm],
+    summary="Films with person.",
+)
+@cache(expire=60)
+async def film_with_person(
+    person_id: str,
+    person_service: PersonService = Depends(person_service),
+) -> PersonUUID:
+    films = await person_service.person_films(
+        person_id
+    )
+    return films
