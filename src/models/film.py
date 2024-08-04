@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from models.genre import GenreUUID
 from models.person import PersonUUID
@@ -17,6 +17,22 @@ class FilmDetail(BaseModel):
     actors: List[PersonUUID]
     writers: List[PersonUUID]
     directors: List[PersonUUID]
+
+
+class FilmIMBDSortedInput(BaseModel):
+    """Модель фильма отсортированного по рейтингу IMBD."""
+
+    uuid: str = Field(alias="id")
+    title: Optional[str]
+    imdb_rating: Optional[float]
+
+
+class FilmIMBDSortedOutput(BaseModel):
+    """Модель фильма отсортированного по рейтингу IMBD."""
+
+    uuid: str
+    title: Optional[str]
+    imdb_rating: Optional[float]
 
 
 class ListFilm(BaseModel):
