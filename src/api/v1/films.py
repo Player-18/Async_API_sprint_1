@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from fastapi_cache.decorator import cache
 
-from models.film import FilmDetail, FilmListInput, FilmListOutput
+from models.film import FilmDetail, FilmListOutput
 from models.genre import GenreUUID
 from models.person import PersonUUID
 from services.film import FilmService, get_film_service
@@ -12,9 +12,15 @@ from typing import List, Optional
 router = APIRouter()
 
 
-@router.get('/{film_id}', response_model=FilmDetail)
+@router.get(
+    '/{film_id}',
+    response_model=FilmDetail,
+    summary="Retrieve detailed information about a film")
 @cache(expire=60)
-async def film_details(film_id: str, film_service: FilmService = Depends(get_film_service)) -> FilmDetail:
+async def film_details(
+        film_id: str = Path(..., description="The ID of the film"),
+        film_service: FilmService = Depends(get_film_service)
+) -> FilmDetail:
     film = await film_service.get_film_from_elastic(film_id)
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
@@ -42,7 +48,11 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
     )
 
 
-@router.get('/', response_model=List[FilmListOutput])
+@router.get(
+    '/',
+    response_model=List[FilmListOutput],
+    summary="Retrieve a list of films with optional search, filter by genre, and sorting options"
+)
 @cache(expire=60)
 async def list_films_imbd_sorted(
         query: Optional[str] = Query(None, description="Search query for film titles"),
@@ -65,10 +75,13 @@ async def list_films_imbd_sorted(
     return [FilmListOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
 
 
-@router.get('/{film_id}/similar', response_model=List[FilmListOutput])
+@router.get(
+    '/{film_id}/similar',
+    response_model=List[FilmListOutput],
+    summary="Get films similar to a specified film")
 @cache(expire=60)
 async def list_films_imbd_sorted(
-        film_id: str,
+        film_id: str = Path(..., description="The ID of the film for which to find similar films"),
         page_size: int = Query(50, le=100, description="Number of films per page"),
         page_number: int = Query(1, ge=1, description="Page number"),
         film_service: FilmService = Depends(get_film_service)

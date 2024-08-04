@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi_cache.decorator import cache
 
 from models.film import FilmListOutput
@@ -52,9 +52,9 @@ async def genres(
 )
 @cache(expire=60)
 async def genres(
-        genre_id: str,
-        page_number: int = 1,
-        page_size: int = 50,
+        genre_id: str = Path(..., description="The ID of the genre for which to find films"),
+        page_number: int = Query(1, ge=1, description="Page number"),
+        page_size: int = Query(50, le=100, description="Number of films per page"),
         genre_service: GenreService = Depends(genre_service)
 ) -> List[FilmListOutput]:
     films = await genre_service.get_popular_films(
