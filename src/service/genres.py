@@ -1,7 +1,7 @@
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
-from src.db.elastic import get_elastic
-from src.models.genre import Genre
+from db.elastic import get_elastic
+from models.genre import Genre
 
 
 class GenreService:
