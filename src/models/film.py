@@ -19,16 +19,16 @@ class FilmDetail(BaseModel):
     directors: List[PersonUUID]
 
 
-class FilmIMBDSortedInput(BaseModel):
-    """Model for film data sorted by IMDb rating, used for input purposes."""
+class FilmListInput(BaseModel):
+    """Model for film data used for input purposes from Elasticsearch."""
 
     uuid: str = Field(alias="id")
     title: Optional[str]
     imdb_rating: Optional[float]
 
 
-class FilmIMBDSortedOutput(BaseModel):
-    """Model for film data sorted by IMDb rating, used for output purposes."""
+class FilmListOutput(BaseModel):
+    """Model for film data used for output purposes for endpoints."""
 
     uuid: str
     title: Optional[str]

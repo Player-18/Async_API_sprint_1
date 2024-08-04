@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_cache.decorator import cache
 
-from models.film import FilmIMBDSortedOutput
+from models.film import FilmListOutput
 from models.genre import Genre
 from services.genres import GenreService, genre_service
 
@@ -47,7 +47,7 @@ async def genres(
 
 @router.get(
     "/{genre_id}/popular",
-    response_model=List[FilmIMBDSortedOutput],
+    response_model=List[FilmListOutput],
     summary="Get popular films by genre"
 )
 @cache(expire=60)
@@ -56,7 +56,7 @@ async def genres(
         page_number: int = 1,
         page_size: int = 50,
         genre_service: GenreService = Depends(genre_service)
-) -> List[FilmIMBDSortedOutput]:
+) -> List[FilmListOutput]:
     films = await genre_service.get_popular_films(
         genre_id=genre_id,
         page_number=page_number,
@@ -66,4 +66,4 @@ async def genres(
     if not films:
         raise HTTPException(status_code=404, detail="No films found for this genre")
 
-    return [FilmIMBDSortedOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
+    return [FilmListOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
