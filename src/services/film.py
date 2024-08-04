@@ -26,12 +26,38 @@ class FilmService:
     async def get_films_list_sorted(self,
                                     sort: str,
                                     page_number: int,
-                                    page_size: int) -> list[FilmIMBDSortedInput] | None:
+                                    page_size: int,
+                                    genre_id: Optional[str] = None
+                                    ) -> list[FilmIMBDSortedInput] | None:
         """Получение списка фильмов отсортированных по рейтингу IMBD."""
+
         sort_dict = {"+": "asc", "-": "desc"}
+
+        filter_conditions = []
+        if genre_id:
+            # Handle nested field filtering for genre_id
+            filter_conditions.append({
+                "nested": {
+                    "path": "genres",
+                    "query": {
+                        "bool": {
+                            "must": [
+                                {"term": {"genres.id": genre_id}}
+                            ]
+                        }
+                    }
+                }
+            })
+
+        # Build the query
         query = {
             "size": page_size,
-            "query": {"match_all": {}},
+            "query": {
+                "bool": {
+                    "must": [{"match_all": {}}],
+                    "filter": filter_conditions
+                }
+            },
             "sort": [{sort[1:]: {"order": sort_dict.get(sort[0])}}],
             "from": (page_number - 1) * page_size,
         }

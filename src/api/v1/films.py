@@ -7,7 +7,7 @@ from models.film import FilmDetail, FilmIMBDSortedInput, FilmIMBDSortedOutput
 from models.genre import GenreUUID
 from models.person import PersonUUID
 from services.film import FilmService, get_film_service
-from typing import List
+from typing import List, Optional
 
 router = APIRouter()
 
@@ -48,11 +48,15 @@ async def list_films_imbd_sorted(
         sort: str = Query("-", description="Sort order ('+' for ascending, '-' for descending)"),
         page_size: int = Query(50, le=100, description="Number of films per page"),
         page_number: int = Query(1, ge=1, description="Page number"),
+        genre: Optional[str] = Query(None, description="Filter by genre ID"),
         film_service: FilmService = Depends(get_film_service)
 ) -> List[FilmIMBDSortedInput]:
 
-    films = await film_service.get_films_list_sorted(sort=sort, page_size=page_size, page_number=page_number)
-    print('!!!asdasdas', films)
+    films = await film_service.get_films_list_sorted(
+        sort=sort,
+        page_size=page_size,
+        page_number=page_number,
+        genre_id=genre)
 
     if not films:
         raise HTTPException(status_code=404, detail="No films found")
