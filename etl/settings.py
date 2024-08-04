@@ -38,6 +38,7 @@ class BaseConfigs(BaseSettings):
 
     batch: int = Field(100, env='BATCH_SIZE')
     border_sleep_time: float = Field(10.0, env='BORDER_SLEEP_TIME')
+    run_etl_every_seconds: int = Field(60, env='RUN_ETL_EVERY_SECONDS')
     es_url: str = EsSettings().get_url()
     redis_settings: dict = RedisSettings().dict()
     dsn: dict = DbSettings().dict()
