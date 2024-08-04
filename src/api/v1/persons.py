@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
 
-from models.film import ListFilm
+from models.film import FilmListOutput
 from models.person import PersonUUID, PersonWithFilms
 from services.persons import PersonService, person_service
 
@@ -45,14 +45,14 @@ async def persons(
 
 @router.get(
     "/{person_id}/film",
-    response_model=List[ListFilm],
+    response_model=List[FilmListOutput],
     summary="Films with person.",
 )
 @cache(expire=60)
 async def films_with_person(
         person_id: str,
         person_service: PersonService = Depends(person_service),
-) -> list[ListFilm] | None:
+) -> list[FilmListOutput] | None:
     films = await person_service.person_films(
         person_id
     )
