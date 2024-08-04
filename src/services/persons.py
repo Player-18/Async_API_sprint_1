@@ -102,7 +102,6 @@ class PersonService:
         hits = response.get("hits")
         if not hits:
             return None
-        print(hits)
         persons = [PersonUUID(uuid=item["_source"].get('id'), full_name=item["_source"].get('name')) for item in
                    hits.get(
                        "hits")]
@@ -115,7 +114,6 @@ class PersonService:
         search_films_with_person = await self._get_films_with_person(person_id)
 
         hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
-        print(hits_films)
         films = [FilmListOutput(uuid=film["_source"]['id'], title=film["_source"]['title'], imdb_rating=film["_source"][
             'imdb_rating']) for film in hits_films]
         return films
