@@ -8,15 +8,23 @@ from models.film import FilmDetail, FilmIMBDSortedInput
 
 
 class FilmService:
-    """Сервис фильмов."""
+    """Film Service."""
 
     index = "movies"
 
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
+    async def _search_films(self, query_body: dict) -> List[FilmIMBDSortedInput]:
+        """Perform the search and return a list of FilmIMBDSortedInput."""
+        response = await self.elastic.search(body=query_body, index=self.index)
+        hits = response.get("hits", {}).get("hits", [])
+        if not hits:
+            return []
+        return [FilmIMBDSortedInput(**item["_source"]) for item in hits]
+
     async def get_film_from_elastic(self, film_id: str) -> Optional[FilmDetail]:
-        """Получение фильма из Elasticsearch."""
+        """Retrieve a single film from Elasticsearch."""
         try:
             doc = await self.elastic.get(index=self.index, id=film_id)
             return doc['_source']
@@ -74,14 +82,7 @@ class FilmService:
             sort_order = sort_dict.get(sort[0], "desc") if sort.startswith(('+', '-')) else "desc"
             query_body["sort"] = [{sort_field: {"order": sort_order}}]
 
-        response = await self.elastic.search(body=query_body, index=self.index)
-
-        hits = response.get("hits", {}).get("hits", [])
-        if not hits:
-            return None
-
-        films = [FilmIMBDSortedInput(**item["_source"]) for item in hits]
-        return films
+        return await self._search_films(query_body)
 
     async def get_similar_films(
             self,
@@ -126,17 +127,11 @@ class FilmService:
             "from": (page_number - 1) * page_size  # Pagination
         }
 
-        response = await self.elastic.search(body=query_body, index=self.index)
-
-        hits = response.get("hits", {}).get("hits", [])
-        if not hits:
-            return []
-
-        films = [FilmIMBDSortedInput(**item["_source"]) for item in hits]
-        return films
+        return await self._search_films(query_body)
 
 
 def get_film_service(
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
+    """Returns an instance of `FilmService` initialized with the provided Elasticsearch client."""
     return FilmService(elastic)

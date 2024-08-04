@@ -84,7 +84,6 @@ class GenreService:
             "from": (page_number - 1) * page_size  # Pagination
         }
 
-        # Execute the search query
         response = await self.elastic.search(body=query_body, index=self.index_movies)
 
         hits = response.get("hits", {}).get("hits", [])
