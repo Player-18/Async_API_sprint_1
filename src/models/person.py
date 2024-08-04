@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class Person(BaseModel):
@@ -13,3 +14,16 @@ class PersonUUID(BaseModel):
 
     uuid: str
     full_name: str
+
+
+class FilmWithPersonRoles(BaseModel):
+    """Модель списка фильмов."""
+
+    uuid: str
+    roles: List[str]
+
+
+class PersonWithFilms(PersonUUID):
+    """Модель персоны c UUID."""
+
+    films: List[FilmWithPersonRoles]

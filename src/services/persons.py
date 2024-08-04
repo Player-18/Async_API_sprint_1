@@ -1,7 +1,8 @@
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from db.elastic import get_elastic
-from models.person import PersonUUID
+from models.film import ListFilm
+from models.person import PersonUUID, PersonWithFilms, FilmWithPersonRoles
 
 
 class PersonService:
@@ -12,17 +13,69 @@ class PersonService:
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
-    async def person_detail(self, id: str) -> PersonUUID | None:
-        """Detail of person"""
+    async def person_detail(self, person_id: str) -> PersonWithFilms | None:
+        """Detail of person with films and roles in those films."""
 
         response = await self.elastic.get(
-            index=self.index, id=id
+            index=self.index, id=person_id
         )
 
         if not response["_source"]:
             return None
-        print(response)
-        person = PersonUUID(uuid=response["_source"].get('id'), full_name=response["_source"].get('name'))
+
+        # Query to ES for getting films with person.
+        query_films_with_person = {
+                "query": {
+                    "bool": {
+                        "should": [
+                            {
+                                "nested": {
+                                    "path": "directors",
+                                    "query": {"bool": {"should": {"term": {"directors.id": f"{person_id}"}}}},
+                                }
+                            },
+                            {
+                                "nested": {
+                                    "path": "writers",
+                                    "query": {"bool": {"should": {"term": {"writers.id": f"{person_id}"}}}},
+                                }
+                            },
+                            {
+                                "nested": {
+                                    "path": "actors",
+                                    "query": {"bool": {"should": {"term": {"actors.id": f"{person_id}"}}}},
+                                }
+                            },
+                        ]
+                    }
+                }}
+
+        search_films_with_person = await self.elastic.search(body=query_films_with_person, index='movies')
+        hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
+
+        films_with_person_roles = []
+
+        for film in hits_films:
+            film_source = film["_source"]
+            person_roles = []
+            if film_source["actors"]:
+                for actor in film_source["actors"]:
+                    if actor["id"] == person_id:
+                        person_roles.append('actor')
+            if film_source["directors"]:
+                for director in film_source["directors"]:
+                    if director["id"] == person_id:
+                        person_roles.append("director")
+
+            if film_source["writers"]:
+                for writer in film_source["writers"]:
+                    if writer["id"] == person_id:
+                        person_roles.append("writer")
+
+            films_with_person_roles.append(FilmWithPersonRoles(uuid=film_source["id"], roles = person_roles))
+
+        person = PersonWithFilms(uuid=response["_source"].get('id'), full_name=response["_source"].get('name'),
+                                 films=films_with_person_roles)
 
         return person
 
@@ -41,15 +94,15 @@ class PersonService:
         if not hits:
             return None
         print(hits)
-        persons = [PersonUUID(uuid=item["_source"].get('id'), full_name=item["_source"].get('name')) for item in hits.get(
-            "hits")]
+        persons = [PersonUUID(uuid=item["_source"].get('id'), full_name=item["_source"].get('name')) for item in
+                   hits.get(
+                       "hits")]
         return persons
 
 
 def person_service(
-    elastic: AsyncElasticsearch = Depends(get_elastic),
+        elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> PersonService:
     """Dependency for person service"""
 
     return PersonService(elastic)
-

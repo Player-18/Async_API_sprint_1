@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
 
-from models.person import PersonUUID
+from models.person import PersonUUID, PersonWithFilms
 from services.persons import PersonService, person_service
 
 router = APIRouter()
@@ -23,10 +23,11 @@ async def person(
     )
     return person_list
 
+
 @router.get(
     "/{person_id}",
-    response_model=PersonUUID,
-    summary="Person detail",
+    response_model=PersonWithFilms,
+    summary="Person detail with films and roles in those films.",
 )
 @cache(expire=60)
 async def persons(
