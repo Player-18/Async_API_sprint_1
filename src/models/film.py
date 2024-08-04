@@ -7,7 +7,7 @@ from models.person import PersonUUID
 
 
 class FilmDetail(BaseModel):
-    """Модель фильма."""
+    """Detailed model for a film, including its title, IMDb rating, description, and related entities."""
 
     uuid: str
     title: str
@@ -20,7 +20,7 @@ class FilmDetail(BaseModel):
 
 
 class FilmIMBDSortedInput(BaseModel):
-    """Модель фильма отсортированного по рейтингу IMBD."""
+    """Model for film data sorted by IMDb rating, used for input purposes."""
 
     uuid: str = Field(alias="id")
     title: Optional[str]
@@ -28,16 +28,10 @@ class FilmIMBDSortedInput(BaseModel):
 
 
 class FilmIMBDSortedOutput(BaseModel):
-    """Модель фильма отсортированного по рейтингу IMBD."""
+    """Model for film data sorted by IMDb rating, used for output purposes."""
 
     uuid: str
     title: Optional[str]
     imdb_rating: Optional[float]
 
 
-class ListFilm(BaseModel):
-    """Модель списка фильмов."""
-
-    id: str
-    imdb_rating: Optional[float]
-    title: Optional[str]
