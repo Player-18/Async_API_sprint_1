@@ -45,14 +45,15 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
 @router.get('/', response_model=List[FilmIMBDSortedOutput])
 @cache(expire=60)
 async def list_films_imbd_sorted(
+        query: Optional[str] = Query(None, description="Search query for film titles"),
         sort: str = Query("-", description="Sort order ('+' for ascending, '-' for descending)"),
         page_size: int = Query(50, le=100, description="Number of films per page"),
         page_number: int = Query(1, ge=1, description="Page number"),
         genre: Optional[str] = Query(None, description="Filter by genre ID"),
         film_service: FilmService = Depends(get_film_service)
 ) -> List[FilmIMBDSortedInput]:
-
     films = await film_service.get_films_list_sorted(
+        query=query,
         sort=sort,
         page_size=page_size,
         page_number=page_number,
