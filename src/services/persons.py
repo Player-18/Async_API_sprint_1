@@ -140,14 +140,14 @@ class PersonService:
     async def person_search(self, page_number: int, page_size: int, query: Optional[str] = None) -> list[PersonWithFilms] | None:
         """Search for person"""
 
-        # Construct search conditions
-        search_conditions = {"match": {"name": query}}
-
+        # Query for searching persons by name.
         query = {
             "size": page_size,
             "query": {
                 "bool": {
-                    "should": search_conditions,
+                    "should": {"match":
+                                   {"name": query}
+                               },
                 }
             },
             "from": (page_number - 1) * page_size,
@@ -160,12 +160,12 @@ class PersonService:
             return None
 
         # Get ID of found persons.
-        persons_id_list = [item["_source"].get('id') for item in hits.get("hits")]
+        founded_persons_id_list = [item["_source"].get('id') for item in hits.get("hits")]
 
         # Get detail(full_name, films) for found persons ID's
-        searched_persons_detail = [await self.person_detail(person_id) for person_id in persons_id_list]
+        founded_persons_with_details = [await self.person_detail(person_id) for person_id in founded_persons_id_list]
 
-        return searched_persons_detail
+        return founded_persons_with_details
 
 
 def person_service(

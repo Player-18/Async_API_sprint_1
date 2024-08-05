@@ -15,19 +15,19 @@ router = APIRouter()
     response_model=List[PersonWithFilms],
     summary="Search for person, return person detail with films and roles in those films.",
 )
-# @cache(expire=60)
+@cache(expire=60)
 async def person_search(
         query: Optional[str] = Query('', description="Search query for person name"),
         page_number: int = 1,
         page_size: int = 50,
         person_service: PersonService = Depends(person_service),
 ) -> list[PersonWithFilms]:
-    person = await person_service.person_search(
+    found_persons = await person_service.person_search(
         query=query,
         page_size=page_size,
         page_number=page_number
     )
-    return person
+    return found_persons
 
 
 @router.get(
