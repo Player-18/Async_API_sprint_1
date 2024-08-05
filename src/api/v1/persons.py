@@ -35,10 +35,14 @@ async def person(
 @cache(expire=60)
 async def persons(
         person_id: str,
+        page_number: int = 1,
+        page_size: int = 50,
         person_service: PersonService = Depends(person_service),
 ) -> PersonUUID:
     person = await person_service.person_detail(
-        person_id
+        person_id=person_id,
+        page_size=page_size,
+        page_number=page_number
     )
     return person
 

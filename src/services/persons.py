@@ -52,7 +52,7 @@ class PersonService:
         search_films_with_person = await self.elastic.search(body=query_films_with_person, index='movies')
         return search_films_with_person.body
 
-    async def person_detail(self, person_id: str) -> PersonWithFilms | None:
+    async def person_detail(self, person_id: str, page_size: int, page_number: int) -> PersonWithFilms | None:
         """Detail of person with films and roles in those films."""
 
         response = await self.elastic.get(
@@ -62,7 +62,7 @@ class PersonService:
         if not response["_source"]:
             return None
 
-        search_films_with_person = await self._get_films_with_person(person_id)
+        search_films_with_person = await self._get_films_with_person(person_id, page_size, page_number)
 
         hits_films = search_films_with_person.get("hits", {}).get("hits", {})
 
