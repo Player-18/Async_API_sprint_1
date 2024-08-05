@@ -15,11 +15,13 @@ class PersonService:
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
-    async def _get_films_with_person(self, person_id: str) -> List:
+    async def _get_films_with_person(self, person_id: str, page_size: int, page_number: int) -> dict:
         """
         Query to ES for getting films with person.
+        :return: Hits of ElasticSearch query.
         """
         query_films_with_person = {
+            "size": page_size,
             "query": {
                 "bool": {
                     "should": [
@@ -43,10 +45,12 @@ class PersonService:
                         },
                     ]
                 }
-            }}
+            },
+            "from": (page_number - 1) * page_size  # Pagination
+        }
 
         search_films_with_person = await self.elastic.search(body=query_films_with_person, index='movies')
-        return search_films_with_person
+        return search_films_with_person.body
 
     async def person_detail(self, person_id: str) -> PersonWithFilms | None:
         """Detail of person with films and roles in those films."""
@@ -60,7 +64,7 @@ class PersonService:
 
         search_films_with_person = await self._get_films_with_person(person_id)
 
-        hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
+        hits_films = search_films_with_person.get("hits", {}).get("hits", {})
 
         films_with_person_roles = []
 
@@ -107,13 +111,18 @@ class PersonService:
                        "hits")]
         return persons
 
-    async def person_films(self, person_id) -> list[FilmListOutput] | None:
+    async def person_films(
+            self,
+            person_id,
+            page_number: int = 1,
+            page_size: int = 50
+    ) -> list[FilmListOutput] | None:
         """
         Get films with person
         """
-        search_films_with_person = await self._get_films_with_person(person_id)
+        search_films_with_person = await self._get_films_with_person(person_id, page_size, page_number)
 
-        hits_films = search_films_with_person.body.get("hits", {}).get("hits", {})
+        hits_films = search_films_with_person.get("hits", {}).get("hits", {})
         films = [FilmListOutput(uuid=film["_source"]['id'], title=film["_source"]['title'], imdb_rating=film["_source"][
             'imdb_rating']) for film in hits_films]
         return films

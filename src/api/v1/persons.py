@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi_cache.decorator import cache
 
 from models.film import FilmListOutput
@@ -51,9 +51,16 @@ async def persons(
 @cache(expire=60)
 async def films_with_person(
         person_id: str,
+        page_number: int = 1,
+        page_size: int = 50,
         person_service: PersonService = Depends(person_service),
 ) -> list[FilmListOutput] | None:
     films = await person_service.person_films(
-        person_id
+        person_id=person_id,
+        page_number=page_number,
+        page_size=page_size
     )
+    if not films:
+        raise HTTPException(status_code=404, detail="No films found for this person")
+
     return films
