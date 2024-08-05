@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
@@ -15,7 +15,12 @@ class PersonService:
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
-    async def _get_films_with_person(self, person_id: str, page_size: int, page_number: int) -> dict:
+    async def _get_films_with_person(
+            self,
+            person_id: str,
+            page_size: int,
+            page_number: int
+    ) -> dict:
         """
         Query to ES for getting films with person.
         :return: Hits of ElasticSearch query.
@@ -52,7 +57,12 @@ class PersonService:
         search_films_with_person = await self.elastic.search(body=query_films_with_person, index='movies')
         return search_films_with_person.body
 
-    async def person_detail(self, person_id: str, page_size: int, page_number: int) -> PersonWithFilms | None:
+    async def person_detail(
+            self,
+            person_id: str,
+            page_size: int = 999,
+            page_number: int = 1
+    ) -> PersonWithFilms | None:
         """Detail of person with films and roles in those films."""
 
         response = await self.elastic.get(
@@ -126,6 +136,36 @@ class PersonService:
         films = [FilmListOutput(uuid=film["_source"]['id'], title=film["_source"]['title'], imdb_rating=film["_source"][
             'imdb_rating']) for film in hits_films]
         return films
+
+    async def person_search(self, page_number: int, page_size: int, query: Optional[str] = None) -> list[PersonWithFilms] | None:
+        """Search for person"""
+
+        # Construct search conditions
+        search_conditions = {"match": {"name": query}}
+
+        query = {
+            "size": page_size,
+            "query": {
+                "bool": {
+                    "should": search_conditions,
+                }
+            },
+            "from": (page_number - 1) * page_size,
+        }
+
+        response = await self.elastic.search(body=query, index="persons")
+        hits = response.get("hits")
+
+        if not hits:
+            return None
+
+        # Get ID of found persons.
+        persons_id_list = [item["_source"].get('id') for item in hits.get("hits")]
+
+        # Get detail(full_name, films) for found persons ID's
+        searched_persons_detail = [await self.person_detail(person_id) for person_id in persons_id_list]
+
+        return searched_persons_detail
 
 
 def person_service(
