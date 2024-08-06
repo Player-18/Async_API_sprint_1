@@ -8,11 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 
 from api.v1 import films, genres, persons
-from core import config
+from core.config import config
 from db import redis, elastic
 
 app = FastAPI(
-    title=config.PROJECT_NAME,
+    title=config.project_name,
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
@@ -35,9 +35,9 @@ app.add_middleware(
 
 @app.on_event('startup')
 async def startup():
-    redis.redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT)
+    redis.redis = Redis(host=config.redis_host, port=config.redis_port)
     FastAPICache.init(RedisBackend(redis.redis), prefix="fastapi-cache")
-    elastic.es = AsyncElasticsearch(hosts=[f'{config.ELASTIC_SCHEMA}{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'])
+    elastic.es = AsyncElasticsearch(hosts=[f'{config.es_url()}'])
 
 
 @app.on_event('shutdown')

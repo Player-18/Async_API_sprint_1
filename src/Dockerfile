@@ -1,7 +1,7 @@
 FROM python:3.10.7-slim-buster
 
 RUN apt-get update && \
-  apt-get install --no-install-recommends -y postgresql postgresql-contrib python-psycopg2 wget make wait-for-it\
+  apt-get install --no-install-recommends -y python-psycopg2 wget make wait-for-it\
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
