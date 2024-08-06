@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from fastapi_cache.decorator import cache
@@ -7,7 +8,6 @@ from models.film import FilmDetail, FilmListOutput
 from models.genre import GenreUUID
 from models.person import PersonUUID
 from services.film import FilmService, get_film_service
-from typing import List, Optional
 
 router = APIRouter()
 
