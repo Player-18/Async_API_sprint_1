@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi_cache.decorator import cache
 
+from core.pagination import PaginationParams
 from models.film import FilmListOutput
 from models.genre import Genre
 from services.genres import GenreService, genre_service
@@ -19,11 +20,10 @@ router = APIRouter()
 @cache(expire=60)
 async def genres(
         genre_service: GenreService = Depends(genre_service),
-        page: int = 1,
-        page_size: int = 10
+        pagination: PaginationParams = Depends(PaginationParams),
 ) -> list[Genre]:
     genres_list = await genre_service.genre_list(
-        page, page_size
+        pagination.page, pagination.page_size
     )
     return genres_list
 
@@ -53,17 +53,16 @@ async def genres(
 @cache(expire=60)
 async def genres(
         genre_id: str = Path(..., description="The ID of the genre for which to find films"),
-        page_number: int = Query(1, ge=1, description="Page number"),
-        page_size: int = Query(50, le=100, description="Number of films per page"),
+        pagination: PaginationParams = Depends(PaginationParams),
         genre_service: GenreService = Depends(genre_service)
 ) -> List[FilmListOutput]:
     films = await genre_service.get_popular_films(
         genre_id=genre_id,
-        page_number=page_number,
-        page_size=page_size
+        page_number=pagination.page,
+        page_size=pagination.page_size
     )
 
     if not films:
-        raise HTTPException(status_code=404, detail="No films found for this genre")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No films found for this genre")
 
     return [FilmListOutput(uuid=film.uuid, title=film.title, imdb_rating=film.imdb_rating) for film in films]
