@@ -1,30 +1,29 @@
 services:
-  backend-test:
-    build:
-      context: ../../
-      dockerfile: src/Dockerfile
+  backend:
+    build: ../../src
+    container_name: backend-test
     env_file:
-      - ../../src/.env
+      - .env
+    restart: unless-stopped
     ports:
       - "8080:8080"
-  tests:
-    build:
-      context: ../../
-      dockerfile: tests/functional/Dockerfile
-    entrypoint: >
-      sh -c "pip install -r /tests/functional/requirements.txt
-      && python3 /tests/functional/utils/wait_for_es.py
-      && python3 /tests/functional/utils/wait_for_redis.py
-      && pytest /tests/functional/src"
     depends_on:
-      - backend-test
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
-  elasticsearch-test:
+  elasticsearch:
     image: elasticsearch:8.14.3
     container_name: elasticsearch-test
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+    healthcheck:
+      test: curl -s http://elasticsearch-test:9200 >/dev/null || exit 1
+      interval: 20s
+      timeout: 10s
+      retries: 10
     ports:
       - "9200:9200"
     deploy:
@@ -35,16 +34,31 @@ services:
     volumes:
       - elastic_test_volume:/usr/share/elasticsearch/data
 
-  redis-test:
+  redis:
     image: redis:5.0.7-alpine
-    container_name: redis
+    container_name: redis-test
     restart: always
     volumes:
       - redis_test_volume:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
     env_file:
-      - ../../src/.env
+      - .env
     ports:
       - "6379:6379"
+
+  functional-tests:
+    build: .
+    container_name: functional-test
+    env_file:
+      - .env
+#    entrypoint: >
+#      sh -c "
+#      python3 /tests/functional/utils/wait_for_es.py
+#      && python3 /tests/functional/utils/wait_for_redis.py"
+##      && pytest /tests/functional/src"
+    depends_on:
+      - backend
 
 volumes:
   elastic_test_volume:
