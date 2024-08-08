@@ -1,6 +1,6 @@
 import time
 
-from ..settings import Settings
+from tests.functional.settings import Settings
 from redis import Redis
 
 settings = Settings()

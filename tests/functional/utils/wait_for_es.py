@@ -1,6 +1,6 @@
 import time
 
-from ..settings import Settings
+from tests.functional.settings import Settings
 from elasticsearch import Elasticsearch
 
 settings = Settings()
