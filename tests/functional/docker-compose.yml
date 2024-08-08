@@ -1,0 +1,51 @@
+services:
+  backend-test:
+    build:
+      context: ../../
+      dockerfile: src/Dockerfile
+    env_file:
+      - ../../src/.env
+    ports:
+      - "8080:8080"
+  tests:
+    build:
+      context: ../../
+      dockerfile: tests/functional/Dockerfile
+    entrypoint: >
+      sh -c "pip install -r /tests/functional/requirements.txt
+      && python3 /tests/functional/utils/wait_for_es.py
+      && python3 /tests/functional/utils/wait_for_redis.py
+      && pytest /tests/functional/src"
+    depends_on:
+      - backend-test
+
+  elasticsearch-test:
+    image: elasticsearch:8.14.3
+    container_name: elasticsearch-test
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    volumes:
+      - elastic_test_volume:/usr/share/elasticsearch/data
+
+  redis-test:
+    image: redis:5.0.7-alpine
+    container_name: redis
+    restart: always
+    volumes:
+      - redis_test_volume:/data
+    env_file:
+      - ../../src/.env
+    ports:
+      - "6379:6379"
+
+volumes:
+  elastic_test_volume:
+  redis_test_volume:
