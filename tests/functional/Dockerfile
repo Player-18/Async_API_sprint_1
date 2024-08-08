@@ -2,10 +2,13 @@ FROM python:3.8-slim-buster
 
 WORKDIR /tests/functional
 
-COPY requirements.txt ./
+COPY start.sh ./
+COPY poetry.lock pyproject.toml ./
 
-RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install
 
 COPY . .
 
